@@ -2,6 +2,9 @@
 
 大学《ERP 与供应链管理系统》课程项目 —— 前后端分离的完整 Web 应用。
 
+> **在线演示地址**：<https://zhouyuesong.pythonanywhere.com>
+> 免费实例，浏览器直接打开即可使用，无需安装任何环境。
+
 - **前端**：HTML5 / CSS3 / 原生 JavaScript（无框架）+ ECharts 5 + Font Awesome 6，多页面应用，全部数据通过 REST API 获取，**前端不直接访问数据库**。
 - **后端**：Python 3 + Flask + Flask-SQLAlchemy + Flask-CORS，严格分层 `Route → Service → Model → Database`，统一 RESTful API。
 - **数据库**：开发环境 SQLite（零配置），仅需修改 `DATABASE_URL` 即可切换 MySQL。
@@ -324,6 +327,10 @@ git push -u origin main
 
 6. 点击 **Reload**，访问 `https://你的用户名.pythonanywhere.com` ——首页、图表、API 全部就绪。
 
+> ⚠️ **免费账号的 Web App 有有效期（约 3 个月）**。到期后网址会显示「停用」提示，
+> 需要登录 PythonAnywhere，在 **Web** 页面点一次 **Run until 3 months from today** 续期。
+> **交作业/答辩前，务必先自己打开一次链接确认能访问。**
+
 ### 9.3 演示数据过期怎么刷新
 
 种子数据里的「今日入库 8 单 / 今日出库 6 单」是按**运行 seed 的当天**生成的，
@@ -344,6 +351,25 @@ cd ~/pet-collar-erp && python3 backend/seed.py
 - [ ] 首页右上角显示绿点「后端已连接」
 - [ ] 首页 4 个 KPI、近 7 天趋势图、预警列表均正常（图标与图表能显示出来）
 - [ ] 出库管理 → 打开生产 50 套的草稿单 → 点「提交审核」→ 弹出 M101 库存不足提示
+
+### 9.5 当前线上实例（维护备忘）
+
+| 项目 | 值 |
+|---|---|
+| 访问网址 | <https://zhouyuesong.pythonanywhere.com> |
+| PythonAnywhere 账号 | `zhouyuesong` |
+| 代码目录 | `/home/zhouyuesong/erp` |
+| 虚拟环境 | `/home/zhouyuesong/venv-erp` |
+| WSGI 入口 | `/var/www/zhouyuesong_pythonanywhere_com_wsgi.py` |
+| 数据库文件 | `/home/zhouyuesong/erp/database/erp.db`（SQLite） |
+
+日常维护：进入 **Consoles → Bash** 执行命令，改完回 **Web** 页面点一次 **Reload**：
+
+```bash
+cd /home/zhouyuesong/erp
+git pull                                                 # 拉取最新代码
+/home/zhouyuesong/venv-erp/bin/python backend/seed.py    # 重置演示数据
+```
 
 ## 十、常见问题
 
