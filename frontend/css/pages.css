@@ -1,0 +1,347 @@
+/* ============================================================
+   pages.css — 各页面特有样式
+   ============================================================ */
+
+/* ============ Dashboard ============ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+}
+
+.chart-box {
+  height: 300px;
+  padding: 8px;
+}
+
+.warning-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 16px 16px;
+}
+
+.warning-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.warning-item.low {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.warning-item .w-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.warning-item.low .w-icon {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.warning-item:not(.low) .w-icon {
+  background: var(--gray-bg);
+  color: var(--text-secondary);
+}
+
+.warning-item .w-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.warning-item .w-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.warning-item .w-code {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.warning-item .w-nums {
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.warning-item .w-nums b {
+  font-size: 15px;
+  color: var(--text);
+}
+
+/* ============ BOM 树 ============ */
+.bom-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.bom-product-list .bom-product-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bom-product-list .bom-product-item:hover {
+  background: #f8fafc;
+}
+
+.bom-product-list .bom-product-item.active {
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary);
+}
+
+.bom-tree-node {
+  padding: 3px 0;
+}
+
+.bom-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.bom-tree-row:hover {
+  background: #f8fafc;
+}
+
+.bom-tree-toggle {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-dark);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.bom-tree-toggle.leaf {
+  visibility: hidden;
+}
+
+.bom-tree-icon {
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.bom-tree-icon.product { color: var(--primary); }
+.bom-tree-icon.semi { color: var(--warning); }
+.bom-tree-icon.material { color: var(--success); }
+
+.bom-tree-qty {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.bom-tree-children {
+  margin-left: 26px;
+}
+
+.bom-node-code {
+  font-family: Consolas, Menlo, monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+/* ============ 物料 ABC 卡片 ============ */
+.abc-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.abc-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.abc-card.active {
+  border-color: var(--primary);
+}
+
+.abc-card .abc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.abc-icon.a { background: var(--danger-bg); color: var(--danger); }
+.abc-icon.b { background: var(--warning-bg); color: #b45309; }
+.abc-icon.c { background: var(--info-bg); color: var(--primary); }
+
+/* ============ 盘点差异高亮 ============ */
+.diff-surplus { color: #b45309; font-weight: 600; }
+.diff-shortage { color: var(--danger); font-weight: 600; }
+.diff-normal { color: var(--text-secondary); }
+
+/* ============ 库存预警页 ============ */
+.warning-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chip-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 5px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border-dark);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* ============ 登录/入口页 ============ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+  padding: 20px;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  width: 420px;
+  max-width: 100%;
+  padding: 36px 40px;
+}
+
+.login-card .login-logo {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.login-card .login-title {
+  text-align: center;
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.login-card .login-sub {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 22px;
+}
+
+.login-card .form-item {
+  margin-bottom: 14px;
+}
+
+.login-tips {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.7;
+}
+
+/* ============ 出入库统计小卡 ============ */
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mini-stat {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  text-align: center;
+}
+
+.mini-stat .ms-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-stat .ms-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 1200px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .bom-layout { grid-template-columns: 1fr; }
+  .mini-stats { grid-template-columns: repeat(3, 1fr); }
+  .abc-cards { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}

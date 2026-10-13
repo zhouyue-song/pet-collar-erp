@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOM 产品结构 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     BOM 产品结构页
+     数据来源：GET /api/v1/bom（产品列表）+ GET /api/v1/bom/{code}（树形BOM）
+     页面逻辑：frontend/js/bom.js
+     ============================================================ -->
+<body data-page="bom">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">BOM 产品结构</div>
+          <div class="page-subtitle">产品 → 半成品 → 物料 多级结构树，领料需求按此自动展开</div>
+        </div>
+      </div>
+
+      <div class="bom-layout">
+        <!-- 左侧：产品列表 -->
+        <div class="card bom-product-list">
+          <div class="card-header"><div class="card-title">产品 / 组件列表</div></div>
+          <div id="bomProductList">
+            <div class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>加载中...</div>
+          </div>
+        </div>
+
+        <!-- 右侧：BOM 结构树 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="bomTreeTitle">BOM 结构树</div>
+            <span class="badge badge-blue" id="bomTreeMeta"></span>
+          </div>
+          <div class="card-body" id="bomTree">
+            <div class="table-empty"><i class="fa-solid fa-arrow-left"></i>请在左侧选择一个产品查看 BOM 结构</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 单件物料汇总表（BOM 扁平展开结果） -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">单件产品物料汇总（BOM 扁平展开）</div>
+        </div>
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th>规格型号</th>
+                <th>单位</th>
+                <th>单件用量</th>
+                <th>物料类型</th>
+                <th>ABC分类</th>
+                <th>默认仓库</th>
+              </tr>
+            </thead>
+            <tbody id="bomFlattenTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/bom.js"></script>
+</body>
+</html>

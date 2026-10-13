@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>库存预警 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     库存预警页
+     预警规则：库存总量 < 安全库存 × 1.2 视为「库存不足」
+     数据来源：GET /api/v1/inventory（前端按物料汇总统计）
+     页面逻辑：frontend/js/warning.js
+     ============================================================ -->
+<body data-page="warning">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">库存预警</div>
+          <div class="page-subtitle">预警阈值 = 安全库存 × 1.2，低于阈值即提示库存不足</div>
+        </div>
+        <button class="btn btn-plain" id="btnRefreshWarning"><i class="fa-solid fa-rotate-right"></i> 刷新</button>
+      </div>
+
+      <div class="warning-summary">
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div>
+            <div class="stat-value text-danger" id="wnLowCount">--</div>
+            <div class="stat-label">库存不足物料</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-shield-halved"></i></div>
+          <div>
+            <div class="stat-value" id="wnSafetyCount">--</div>
+            <div class="stat-label">设置安全库存物料</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fa-solid fa-bell"></i></div>
+          <div>
+            <div class="stat-value" id="wnTotalCount">--</div>
+            <div class="stat-label">纳入预警监控物料</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="chip-group">
+            <div class="chip active" data-status="">全部</div>
+            <div class="chip" data-status="LOW">库存不足</div>
+            <div class="chip" data-status="NORMAL">库存正常</div>
+          </div>
+          <div class="filter-actions">
+            <div class="filter-item">
+              <label>关键字</label>
+              <input class="form-input" style="width:160px;" type="text" id="fWnKeyword" placeholder="编码 / 名称">
+            </div>
+            <button class="btn btn-primary" id="btnWnSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th>规格型号</th>
+                <th>单位</th>
+                <th>库存总量</th>
+                <th>安全库存</th>
+                <th>预警阈值(×1.2)</th>
+                <th>缺口数量</th>
+                <th>库存状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="warningTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="warningPagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/warning.js"></script>
+</body>
+</html>

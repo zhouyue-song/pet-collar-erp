@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据总览 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     数据总览页（Dashboard）
+     数据来源：GET /api/v1/dashboard/summary + GET /api/v1/ledger（近7天聚合）
+     页面逻辑：frontend/js/dashboard.js
+     ============================================================ -->
+<body data-page="dashboard">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"><!-- common.js 动态渲染左侧导航 --></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"><!-- common.js 动态渲染顶部栏 --></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">数据总览</div>
+          <div class="page-subtitle">智能宠物健康监测项圈 ERP 库存管理系统 · 首页看板</div>
+        </div>
+        <button class="btn btn-plain" id="btnRefreshDash"><i class="fa-solid fa-rotate-right"></i> 刷新</button>
+      </div>
+
+      <!-- KPI 统计卡片：数值全部由 GET /api/v1/dashboard/summary 返回 -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div>
+            <div class="stat-value" id="statMaterials">--</div>
+            <div class="stat-label">启用物料种类</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-truck-ramp-box"></i></div>
+          <div>
+            <div class="stat-value" id="statInbound">--</div>
+            <div class="stat-label">今日入库单数</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fa-solid fa-people-carry-box"></i></div>
+          <div>
+            <div class="stat-value" id="statOutbound">--</div>
+            <div class="stat-label">今日出库单数</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-clipboard-list"></i></div>
+          <div>
+            <div class="stat-value" id="statStocktake">--</div>
+            <div class="stat-label">待盘点任务</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- 近7天出入库趋势（ECharts 柱状图，数据由 dashboard.js 聚合 GET /api/v1/ledger） -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">近7天出入库趋势</div>
+          </div>
+          <div class="chart-box" id="trendChart"><!-- ECharts 渲染容器 --></div>
+        </div>
+
+        <!-- 库存预警（安全库存 × 1.2 阈值，数据来自 dashboard summary.warnings） -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">库存预警监控</div>
+            <a href="warning.html" class="btn btn-text btn-sm">查看全部 <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <div class="warning-list" id="warningList">
+            <div class="table-empty"><i class="fa-solid fa-circle-notch fa-spin"></i>加载中...</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<script src="../vendor/echarts/echarts.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/dashboard.js"></script>
+</body>
+</html>

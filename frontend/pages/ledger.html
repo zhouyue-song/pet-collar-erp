@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>库存流水 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     库存流水页（库存台账）
+     数据来源：GET /api/v1/ledger，所有库存变动（入库/出库/调整/期初）
+     都会生成流水，满足 变动前 + 变动数量 = 变动后 的恒等式
+     页面逻辑：frontend/js/ledger.js
+     ============================================================ -->
+<body data-page="ledger">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">库存流水</div>
+          <div class="page-subtitle">每一次库存变动都有迹可循：变动前 + 变动数量 = 变动后</div>
+        </div>
+        <button class="btn btn-plain" id="btnRefreshLedger"><i class="fa-solid fa-rotate-right"></i> 刷新</button>
+      </div>
+
+      <!-- 汇总小卡（来自 /api/v1/ledger 的 summary，随筛选条件联动） -->
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="ms-value text-success" id="msLgInQty">--</div>
+          <div class="ms-label">入库总量</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value text-warning" id="msLgOutQty">--</div>
+          <div class="ms-label">出库总量</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value" id="msLgAdjQty">--</div>
+          <div class="ms-label">调整总量(±)</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value" id="msLgInAmount">--</div>
+          <div class="ms-label">入库金额(元)</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value" id="msLgOutAmount">--</div>
+          <div class="ms-label">出库金额(元)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>开始日期</label>
+            <input class="form-input" style="width:140px;" type="date" id="fLgStart">
+          </div>
+          <div class="filter-item">
+            <label>结束日期</label>
+            <input class="form-input" style="width:140px;" type="date" id="fLgEnd">
+          </div>
+          <div class="filter-item">
+            <label>物料编码</label>
+            <input class="form-input" style="width:120px;" type="text" id="fLgCode" placeholder="如 M101">
+          </div>
+          <div class="filter-item">
+            <label>仓库</label>
+            <select class="form-select" style="width:110px;" id="fLgWarehouse">
+              <option value="">全部仓库</option>
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>单据类型</label>
+            <select class="form-select" style="width:110px;" id="fLgDocType">
+              <option value="">全部类型</option>
+              <option value="INBOUND">采购入库</option>
+              <option value="OUTBOUND">生产领料</option>
+              <option value="STOCKTAKE">库存调整</option>
+              <option value="INIT">期初建账</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-plain" id="btnLgReset"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+            <button class="btn btn-primary" id="btnLgSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>流水号</th>
+                <th>单据号</th>
+                <th>单据类型</th>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th>仓库</th>
+                <th>库位</th>
+                <th>方向</th>
+                <th>变动前</th>
+                <th>变动数量</th>
+                <th>变动后</th>
+                <th>单价(元)</th>
+                <th>金额(元)</th>
+                <th>业务时间</th>
+                <th>操作人</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="ledgerPagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/ledger.js"></script>
+</body>
+</html>

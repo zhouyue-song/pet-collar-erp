@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>采购入库管理 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     采购入库管理页
+     业务流程：新建(草稿) → 保存草稿 → 提交审核 → 确认入库(增加库存+流水)
+     全部接口见 frontend/js/inbound.js 中的 API-BEGIN/API-END 标注
+     ============================================================ -->
+<body data-page="inbound">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">采购入库管理</div>
+          <div class="page-subtitle">新建 → 保存草稿 → 提交审核 → 确认入库（确认后库存增加并生成流水）</div>
+        </div>
+        <button class="btn btn-primary" id="btnNewInbound"><i class="fa-solid fa-plus"></i> 新建入库单</button>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>入库单号</label>
+            <input class="form-input" style="width:140px;" type="text" id="fIbNo" placeholder="如 RK20260929001">
+          </div>
+          <div class="filter-item">
+            <label>采购订单号</label>
+            <input class="form-input" style="width:140px;" type="text" id="fIbPoNo" placeholder="如 PO20260925001">
+          </div>
+          <div class="filter-item">
+            <label>供应商</label>
+            <input class="form-input" style="width:130px;" type="text" id="fIbSupplier" placeholder="供应商名称">
+          </div>
+          <div class="filter-item">
+            <label>仓库</label>
+            <select class="form-select" style="width:120px;" id="fIbWarehouse">
+              <option value="">全部仓库</option>
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>入库日期</label>
+            <input class="form-input" style="width:140px;" type="date" id="fIbDate">
+          </div>
+          <div class="filter-item">
+            <label>状态</label>
+            <select class="form-select" style="width:110px;" id="fIbStatus">
+              <option value="">全部状态</option>
+              <option value="DRAFT">草稿</option>
+              <option value="PENDING">待审核</option>
+              <option value="COMPLETED">已完成</option>
+              <option value="REJECTED">已驳回</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-plain" id="btnIbReset"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+            <button class="btn btn-primary" id="btnIbSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>入库单号</th>
+                <th>采购订单号</th>
+                <th>供应商</th>
+                <th>仓库</th>
+                <th>入库日期</th>
+                <th>明细项数</th>
+                <th>总数量</th>
+                <th>总金额</th>
+                <th>状态</th>
+                <th>制单人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="inboundTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="inboundPagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<!-- ==================== 入库单编辑抽屉 ==================== -->
+<div class="drawer-mask" id="inboundDrawerMask">
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title" id="inboundDrawerTitle">新建入库单</div>
+      <button class="modal-close" id="btnIbDrawerClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-body">
+      <!-- 基本信息 -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">基本信息</div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label>入库单号</label>
+            <input class="form-input" type="text" id="ibNo" disabled placeholder="保存后系统自动生成">
+          </div>
+          <div class="form-item">
+            <label>采购订单号</label>
+            <input class="form-input" type="text" id="ibPoNo" placeholder="如 PO20260925001">
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>供应商</label>
+            <input class="form-input" type="text" id="ibSupplier" placeholder="如 深圳华强电子">
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>入库日期</label>
+            <input class="form-input" type="date" id="ibDate">
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>入库仓库</label>
+            <select class="form-select" id="ibWarehouse">
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label>制单人</label>
+            <input class="form-input" type="text" id="ibOperator" placeholder="如 张伟">
+          </div>
+          <div class="form-item full">
+            <label>备注</label>
+            <textarea class="form-textarea" id="ibRemark" rows="2" placeholder="选填"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 入库明细 -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">
+          入库明细
+          <button class="btn btn-text btn-sm" id="btnIbAddRow"><i class="fa-solid fa-plus"></i> 添加明细</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table detail-table">
+            <thead>
+              <tr>
+                <th style="width:140px;">物料编码</th>
+                <th>物料名称</th>
+                <th style="width:80px;">单位</th>
+                <th style="width:100px;">采购数量</th>
+                <th style="width:100px;">已入库数量</th>
+                <th style="width:120px;">本次入库数量</th>
+                <th style="width:110px;">入库单价(元)</th>
+                <th style="width:100px;">金额(元)</th>
+                <th style="width:110px;">库位</th>
+                <th style="width:60px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="ibItemsBody"></tbody>
+          </table>
+        </div>
+        <div style="text-align:right;padding:10px 4px 0;font-size:13px;">
+          合计金额：<b class="text-primary" id="ibTotalAmount">0.00</b> 元
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-plain" id="btnIbCancel">取消</button>
+      <button class="btn btn-plain" id="btnIbSave"><i class="fa-solid fa-floppy-disk"></i> 保存草稿</button>
+      <button class="btn btn-warning" id="btnIbSubmit"><i class="fa-solid fa-paper-plane"></i> 提交审核</button>
+      <button class="btn btn-success" id="btnIbConfirm"><i class="fa-solid fa-check"></i> 确认入库</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/inbound.js"></script>
+</body>
+</html>

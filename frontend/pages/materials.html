@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>物料档案 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     物料档案页（含 ABC 分类）
+     数据来源：GET/POST/PUT/DELETE /api/v1/materials
+     页面逻辑：frontend/js/materials.js
+     ============================================================ -->
+<body data-page="materials">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">物料档案</div>
+          <div class="page-subtitle">物料主数据与 ABC 分类管理，被引用的物料不可删除</div>
+        </div>
+        <button class="btn btn-primary" id="btnNewMaterial"><i class="fa-solid fa-plus"></i> 新增物料</button>
+      </div>
+
+      <!-- ABC 分类卡片（点击切换筛选） -->
+      <div class="abc-cards">
+        <div class="abc-card active" data-abc="">
+          <div class="abc-icon" style="background:var(--gray-bg);color:var(--text-secondary);">全</div>
+          <div>
+            <div class="stat-value" id="abcAllCount">--</div>
+            <div class="stat-label">全部物料</div>
+          </div>
+        </div>
+        <div class="abc-card" data-abc="A">
+          <div class="abc-icon a">A</div>
+          <div>
+            <div class="stat-value" id="abcACount">--</div>
+            <div class="stat-label">A类 · 重点管控</div>
+          </div>
+        </div>
+        <div class="abc-card" data-abc="B">
+          <div class="abc-icon b">B</div>
+          <div>
+            <div class="stat-value" id="abcBCount">--</div>
+            <div class="stat-label">B类 · 常规管理</div>
+          </div>
+        </div>
+        <div class="abc-card" data-abc="C">
+          <div class="abc-icon c">C</div>
+          <div>
+            <div class="stat-value" id="abcCCount">--</div>
+            <div class="stat-label">C类 · 简化管理</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>关键字</label>
+            <input class="form-input" style="width:180px;" type="text" id="fMtKeyword" placeholder="编码 / 名称 / 规格">
+          </div>
+          <div class="filter-item">
+            <label>物料分类</label>
+            <select class="form-select" style="width:130px;" id="fMtCategory">
+              <option value="">全部分类</option>
+              <option value="电子元器件">电子元器件</option>
+              <option value="结构件">结构件</option>
+              <option value="电池电源">电池电源</option>
+              <option value="包装材料">包装材料</option>
+              <option value="辅料配件">辅料配件</option>
+              <option value="半成品">半成品</option>
+              <option value="成品">成品</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>ABC分类</label>
+            <select class="form-select" style="width:100px;" id="fMtAbc">
+              <option value="">全部</option>
+              <option value="A">A类</option>
+              <option value="B">B类</option>
+              <option value="C">C类</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>状态</label>
+            <select class="form-select" style="width:100px;" id="fMtStatus">
+              <option value="">全部</option>
+              <option value="active">启用</option>
+              <option value="inactive">停用</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-plain" id="btnMtReset"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+            <button class="btn btn-primary" id="btnMtSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th>物料分类</th>
+                <th>规格型号</th>
+                <th>单位</th>
+                <th>ABC分类</th>
+                <th>物料类型</th>
+                <th>安全库存</th>
+                <th>采购提前期(天)</th>
+                <th>默认仓库</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="materialsTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="materialsPagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<!-- ==================== 物料编辑模态框 ==================== -->
+<div class="modal-mask" id="materialModalMask">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="materialModalTitle">新增物料</div>
+      <button class="modal-close" id="btnMtModalClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-item">
+          <label><span class="required">*</span>物料编码</label>
+          <input class="form-input" type="text" id="mtCode" placeholder="如 M701">
+        </div>
+        <div class="form-item">
+          <label><span class="required">*</span>物料名称</label>
+          <input class="form-input" type="text" id="mtName" placeholder="如 温度传感器">
+        </div>
+        <div class="form-item">
+          <label>物料分类</label>
+          <select class="form-select" id="mtCategory">
+            <option value="电子元器件">电子元器件</option>
+            <option value="结构件">结构件</option>
+            <option value="电池电源">电池电源</option>
+            <option value="包装材料">包装材料</option>
+            <option value="辅料配件">辅料配件</option>
+            <option value="半成品">半成品</option>
+            <option value="成品">成品</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>规格型号</label>
+          <input class="form-input" type="text" id="mtSpec" placeholder="如 MAX30102">
+        </div>
+        <div class="form-item">
+          <label><span class="required">*</span>计量单位</label>
+          <select class="form-select" id="mtUnit">
+            <option value="个">个</option>
+            <option value="片">片</option>
+            <option value="套">套</option>
+            <option value="米">米</option>
+            <option value="条">条</option>
+            <option value="卷">卷</option>
+            <option value="对">对</option>
+            <option value="块">块</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label><span class="required">*</span>ABC分类</label>
+          <select class="form-select" id="mtAbc">
+            <option value="B">B类</option>
+            <option value="A">A类</option>
+            <option value="C">C类</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label><span class="required">*</span>物料类型</label>
+          <select class="form-select" id="mtType">
+            <option value="外购件">外购件</option>
+            <option value="自制件">自制件</option>
+            <option value="委外件">委外件</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>安全库存</label>
+          <input class="form-input" type="number" min="0" id="mtSafety" value="0">
+        </div>
+        <div class="form-item">
+          <label>采购提前期(天)</label>
+          <input class="form-input" type="number" min="0" id="mtLeadTime" value="7">
+        </div>
+        <div class="form-item">
+          <label>默认仓库</label>
+          <select class="form-select" id="mtWarehouse">
+            <option value="原材料仓">原材料仓</option>
+            <option value="半成品仓">半成品仓</option>
+            <option value="成品仓">成品仓</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>状态</label>
+          <select class="form-select" id="mtStatus">
+            <option value="active">启用</option>
+            <option value="inactive">停用</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" id="btnMtCancel">取消</button>
+      <button class="btn btn-primary" id="btnMtSave"><i class="fa-solid fa-floppy-disk"></i> 保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/materials.js"></script>
+</body>
+</html>

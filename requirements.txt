@@ -1,0 +1,19 @@
+# ============================================
+# 智能宠物健康监测项圈 ERP 库存管理系统 - 依赖清单
+# 安装命令：pip install -r requirements.txt
+# ============================================
+
+# Web 框架
+Flask>=3.0
+
+# ORM 框架
+Flask-SQLAlchemy>=3.1
+
+# 跨域支持（前后端分离必须）
+Flask-CORS>=4.0
+
+# 加载 .env 环境变量文件
+python-dotenv>=1.0
+
+# MySQL 驱动（切换 MySQL 时使用，SQLite 下安装无副作用）
+PyMySQL>=1.1

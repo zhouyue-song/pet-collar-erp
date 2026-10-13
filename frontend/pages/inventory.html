@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>库存总览 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     库存总览页
+     数据来源：GET /api/v1/inventory（列表+汇总），账面库存只读，
+     只能通过 入库/出库/盘点调整 三种业务单据变动
+     页面逻辑：frontend/js/inventory.js
+     ============================================================ -->
+<body data-page="inventory">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">库存总览</div>
+          <div class="page-subtitle">账面库存只读，只能通过入库 / 出库 / 盘点调整变动</div>
+        </div>
+        <button class="btn btn-plain" id="btnRefreshInv"><i class="fa-solid fa-rotate-right"></i> 刷新</button>
+      </div>
+
+      <!-- 汇总小卡（来自 /api/v1/inventory 的 summary） -->
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="ms-value text-primary" id="msMaterialCount">--</div>
+          <div class="ms-label">库存物料种类</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value" id="msTotalQuantity">--</div>
+          <div class="ms-label">库存总量</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value" id="msTotalAmount">--</div>
+          <div class="ms-label">库存总金额(元)</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value text-danger" id="msLowCount">--</div>
+          <div class="ms-label">库存不足种数</div>
+        </div>
+        <div class="mini-stat">
+          <div class="ms-value" id="msWarehouseCount">--</div>
+          <div class="ms-label">涉及仓库数</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>物料编码</label>
+            <input class="form-input" style="width:120px;" type="text" id="fIvCode" placeholder="如 M101">
+          </div>
+          <div class="filter-item">
+            <label>物料名称</label>
+            <input class="form-input" style="width:130px;" type="text" id="fIvName" placeholder="如 心率传感器">
+          </div>
+          <div class="filter-item">
+            <label>仓库</label>
+            <select class="form-select" style="width:110px;" id="fIvWarehouse">
+              <option value="">全部仓库</option>
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>库位</label>
+            <input class="form-input" style="width:100px;" type="text" id="fIvLocation" placeholder="如 A-01">
+          </div>
+          <div class="filter-item">
+            <label>ABC分类</label>
+            <select class="form-select" style="width:100px;" id="fIvAbc">
+              <option value="">全部</option>
+              <option value="A">A类</option>
+              <option value="B">B类</option>
+              <option value="C">C类</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>库存状态</label>
+            <select class="form-select" style="width:110px;" id="fIvStatus">
+              <option value="">全部</option>
+              <option value="LOW">库存不足</option>
+              <option value="NORMAL">库存正常</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-plain" id="btnIvReset"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+            <button class="btn btn-primary" id="btnIvSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th>规格型号</th>
+                <th>单位</th>
+                <th>仓库</th>
+                <th>库位</th>
+                <th>账面库存</th>
+                <th>安全库存</th>
+                <th>库存状态</th>
+                <th>平均单价(元)</th>
+                <th>库存金额(元)</th>
+                <th>更新时间</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="inventoryPagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/inventory.js"></script>
+</body>
+</html>

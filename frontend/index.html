@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 智能宠物健康监测项圈 ERP 库存管理系统</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     登录/入口页（课程项目演示入口，无真实鉴权）
+     TODO-EXTENSION: 接入真实登录认证
+       后端新增 POST /api/v1/auth/login（JWT），前端在此调用
+       API.post('/auth/login', ...) 并保存 token 到 localStorage，
+       api.js 中统一附带 Authorization 请求头（见 api.js TODO-EXTENSION）
+     ============================================================ -->
+<body class="login-page">
+  <div class="login-card">
+    <div class="login-logo"><i class="fa-solid fa-dog"></i></div>
+    <div class="login-title">宠物健康监测项圈 ERP</div>
+    <div class="login-sub">库存管理系统 · 大学课程项目</div>
+
+    <form id="loginForm">
+      <div class="form-item">
+        <label>用户名</label>
+        <input class="form-input" type="text" id="loginUsername" value="admin" placeholder="请输入用户名">
+      </div>
+      <div class="form-item">
+        <label>密码</label>
+        <input class="form-input" type="password" id="loginPassword" value="123456" placeholder="请输入密码">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:10px;">
+        <i class="fa-solid fa-right-to-bracket"></i> 登录进入系统
+      </button>
+    </form>
+
+    <div class="login-tips">
+      技术栈：HTML5 + CSS3 + JavaScript（原生）｜ Flask + SQLAlchemy<br>
+      前端仅通过 REST API 访问后端，不直接连接数据库
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    // 入口页不涉及业务数据，仅做页面跳转
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      window.location.href = "pages/dashboard.html";
+    });
+  </script>
+</body>
+</html>

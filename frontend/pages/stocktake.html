@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>库存盘点 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     库存盘点页
+     业务流程（6步）：创建盘点任务(快照) → 录入实盘数量(自动算差异)
+               → 提交审核 → 确认调整(生成 ADJUST 流水，不直接改库存)
+     全部接口见 frontend/js/stocktake.js 中的 API-BEGIN/API-END 标注
+     ============================================================ -->
+<body data-page="stocktake">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">库存盘点</div>
+          <div class="page-subtitle">创建任务 → 录入实盘 → 提交审核 → 确认调整（差异 = 实盘 − 账面）</div>
+        </div>
+        <button class="btn btn-primary" id="btnNewStocktake"><i class="fa-solid fa-plus"></i> 新建盘点任务</button>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>盘点单号</label>
+            <input class="form-input" style="width:140px;" type="text" id="fStNo" placeholder="如 PD20260929001">
+          </div>
+          <div class="filter-item">
+            <label>仓库</label>
+            <select class="form-select" style="width:110px;" id="fStWarehouse">
+              <option value="">全部仓库</option>
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>盘点类型</label>
+            <select class="form-select" style="width:110px;" id="fStType">
+              <option value="">全部类型</option>
+              <option value="FULL">全面盘点</option>
+              <option value="SAMPLE">抽样盘点</option>
+              <option value="CYCLE">循环盘点</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>盘点日期</label>
+            <input class="form-input" style="width:140px;" type="date" id="fStDate">
+          </div>
+          <div class="filter-item">
+            <label>状态</label>
+            <select class="form-select" style="width:120px;" id="fStStatus">
+              <option value="">全部状态</option>
+              <option value="DRAFT">草稿</option>
+              <option value="COUNTING">盘点中</option>
+              <option value="PENDING_REVIEW">待复核</option>
+              <option value="COMPLETED">已完成</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-plain" id="btnStReset"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+            <button class="btn btn-primary" id="btnStSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>盘点单号</th>
+                <th>仓库</th>
+                <th>盘点类型</th>
+                <th>盘点日期</th>
+                <th>盘点物料数</th>
+                <th>差异项数</th>
+                <th>状态</th>
+                <th>制单人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="stocktakeTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="stocktakePagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<!-- ==================== 盘点单编辑抽屉 ==================== -->
+<div class="drawer-mask" id="stocktakeDrawerMask">
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title" id="stocktakeDrawerTitle">新建盘点任务</div>
+      <button class="modal-close" id="btnStDrawerClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-body">
+      <!-- 流程步骤条 -->
+      <div class="steps" id="stSteps">
+        <div class="step" data-step="1">
+          <div class="step-dot">1</div>
+          <div class="step-text">创建盘点单</div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-dot">2</div>
+          <div class="step-text">录入实盘数量</div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-dot">3</div>
+          <div class="step-text">提交审核</div>
+        </div>
+        <div class="step" data-step="4">
+          <div class="step-dot">4</div>
+          <div class="step-text">差异调整</div>
+        </div>
+      </div>
+
+      <!-- 基本信息 -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">基本信息</div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label>盘点单号</label>
+            <input class="form-input" type="text" id="stNo" disabled placeholder="保存后系统自动生成">
+          </div>
+          <div class="form-item">
+            <label>盘点类型</label>
+            <select class="form-select" id="stType">
+              <option value="FULL">全面盘点</option>
+              <option value="SAMPLE">抽样盘点</option>
+              <option value="CYCLE">循环盘点</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>盘点仓库</label>
+            <select class="form-select" id="stWarehouse">
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label>盘点日期</label>
+            <input class="form-input" type="date" id="stDate">
+          </div>
+          <div class="form-item">
+            <label>制单人</label>
+            <input class="form-input" type="text" id="stOperator" placeholder="如 王芳">
+          </div>
+          <div class="form-item">
+            <label>盘点说明</label>
+            <input class="form-input" type="text" id="stRemark" placeholder="选填">
+          </div>
+        </div>
+      </div>
+
+      <!-- 盘点明细（创建时自动生成账面快照） -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">盘点明细（创建任务时自动生成账面快照）</div>
+        <div class="table-wrap">
+          <table class="data-table detail-table">
+            <thead>
+              <tr>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th style="width:70px;">单位</th>
+                <th style="width:90px;">库位</th>
+                <th style="width:90px;">账面数量</th>
+                <th style="width:110px;">实盘数量</th>
+                <th style="width:90px;">差异数量</th>
+                <th style="width:90px;">差异结果</th>
+                <th style="width:90px;">调整状态</th>
+                <th>差异原因</th>
+              </tr>
+            </thead>
+            <tbody id="stItemsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-plain" id="btnStCancel">取消</button>
+      <button class="btn btn-plain" id="btnStSave"><i class="fa-solid fa-floppy-disk"></i> 保存盘点数据</button>
+      <button class="btn btn-warning" id="btnStSubmit"><i class="fa-solid fa-paper-plane"></i> 提交审核</button>
+      <button class="btn btn-success" id="btnStAdjust"><i class="fa-solid fa-check"></i> 确认调整</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/stocktake.js"></script>
+</body>
+</html>

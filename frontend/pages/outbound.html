@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生产领料出库 - 智能宠物健康监测项圈 ERP</title>
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+</head>
+<!-- ============================================================
+     生产领料出库页
+     业务流程：选择产品+生产数量 → 按 BOM 自动生成物料需求
+               → 保存草稿 → 提交审核(检查可用库存) → 确认出库(扣减库存+流水)
+     全部接口见 frontend/js/outbound.js 中的 API-BEGIN/API-END 标注
+     ============================================================ -->
+<body data-page="outbound">
+<div class="app-layout">
+  <aside class="app-sidebar" id="appSidebar"></aside>
+  <div class="app-body">
+    <header class="app-header" id="appHeader"></header>
+    <main class="app-content">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">生产领料出库</div>
+          <div class="page-subtitle">按 BOM 自动生成物料需求：需求数量 = BOM用量 × 生产数量，提交时校验可用库存</div>
+        </div>
+        <button class="btn btn-primary" id="btnNewOutbound"><i class="fa-solid fa-plus"></i> 新建领料单</button>
+      </div>
+
+      <div class="card">
+        <div class="filter-bar">
+          <div class="filter-item">
+            <label>出库单号</label>
+            <input class="form-input" style="width:140px;" type="text" id="fObNo" placeholder="如 CK20260929001">
+          </div>
+          <div class="filter-item">
+            <label>生产工单号</label>
+            <input class="form-input" style="width:140px;" type="text" id="fObPoNo" placeholder="如 MO20260929001">
+          </div>
+          <div class="filter-item">
+            <label>产品</label>
+            <select class="form-select" style="width:160px;" id="fObProduct">
+              <option value="">全部产品</option>
+              <!-- JS 通过 GET /api/v1/bom 动态填充 -->
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>出库日期</label>
+            <input class="form-input" style="width:140px;" type="date" id="fObDate">
+          </div>
+          <div class="filter-item">
+            <label>生产车间</label>
+            <input class="form-input" style="width:110px;" type="text" id="fObDepartment" placeholder="如 一车间">
+          </div>
+          <div class="filter-item">
+            <label>状态</label>
+            <select class="form-select" style="width:110px;" id="fObStatus">
+              <option value="">全部状态</option>
+              <option value="DRAFT">草稿</option>
+              <option value="PENDING">待审核</option>
+              <option value="COMPLETED">已完成</option>
+              <option value="REJECTED">已驳回</option>
+            </select>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-plain" id="btnObReset"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+            <button class="btn btn-primary" id="btnObSearch"><i class="fa-solid fa-magnifying-glass"></i> 查询</button>
+          </div>
+        </div>
+
+        <div class="table-wrap position-relative">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>出库单号</th>
+                <th>生产工单号</th>
+                <th>产品</th>
+                <th>生产数量</th>
+                <th>生产车间</th>
+                <th>仓库</th>
+                <th>出库日期</th>
+                <th>总领料数量</th>
+                <th>状态</th>
+                <th>制单人</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="outboundTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="outboundPagination"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<!-- ==================== 领料出库单编辑抽屉 ==================== -->
+<div class="drawer-mask" id="outboundDrawerMask">
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title" id="outboundDrawerTitle">新建领料出库单</div>
+      <button class="modal-close" id="btnObDrawerClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-body">
+      <!-- 基本信息 -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">基本信息</div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label>出库单号</label>
+            <input class="form-input" type="text" id="obNo" disabled placeholder="保存后系统自动生成">
+          </div>
+          <div class="form-item">
+            <label>生产工单号</label>
+            <input class="form-input" type="text" id="obPoNo" placeholder="如 MO20260929001">
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>产品（BOM）</label>
+            <select class="form-select" id="obProduct">
+              <option value="">-- 请选择产品 --</option>
+              <!-- JS 通过 GET /api/v1/bom 动态填充 -->
+            </select>
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>生产数量</label>
+            <input class="form-input" type="number" min="1" id="obQuantity" placeholder="如 50" value="50">
+          </div>
+          <div class="form-item">
+            <label>生产车间</label>
+            <input class="form-input" type="text" id="obDepartment" placeholder="如 一车间">
+          </div>
+          <div class="form-item">
+            <label>出库日期</label>
+            <input class="form-input" type="date" id="obDate">
+          </div>
+          <div class="form-item">
+            <label><span class="required">*</span>领料仓库</label>
+            <select class="form-select" id="obWarehouse">
+              <option value="原材料仓">原材料仓</option>
+              <option value="半成品仓">半成品仓</option>
+              <option value="成品仓">成品仓</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label>制单人</label>
+            <input class="form-input" type="text" id="obOperator" placeholder="如 李娜">
+          </div>
+          <div class="form-item full">
+            <label>备注</label>
+            <textarea class="form-textarea" id="obRemark" rows="2" placeholder="选填"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOM 物料需求明细（选择产品后自动生成） -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">
+          物料需求明细（BOM 自动生成）
+          <button class="btn btn-text btn-sm" id="btnObRegenerate"><i class="fa-solid fa-rotate-right"></i> 重新生成</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table detail-table">
+            <thead>
+              <tr>
+                <th>物料编码</th>
+                <th>物料名称</th>
+                <th style="width:70px;">单位</th>
+                <th style="width:90px;">BOM用量</th>
+                <th style="width:100px;">需求数量</th>
+                <th style="width:110px;">本次出库数量</th>
+                <th style="width:90px;">可用库存</th>
+                <th style="width:100px;">库位</th>
+              </tr>
+            </thead>
+            <tbody id="obItemsBody"></tbody>
+          </table>
+        </div>
+        <div style="text-align:right;padding:10px 4px 0;font-size:13px;">
+          需求总量：<b class="text-primary" id="obTotalRequired">0</b>
+          ｜ 本次出库：<b class="text-warning" id="obTotalOutbound">0</b>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-plain" id="btnObCancel">取消</button>
+      <button class="btn btn-plain" id="btnObSave"><i class="fa-solid fa-floppy-disk"></i> 保存草稿</button>
+      <button class="btn btn-warning" id="btnObSubmit"><i class="fa-solid fa-paper-plane"></i> 提交审核</button>
+      <button class="btn btn-success" id="btnObConfirm"><i class="fa-solid fa-check"></i> 确认出库</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/outbound.js"></script>
+</body>
+</html>
